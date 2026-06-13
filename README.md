@@ -2,6 +2,20 @@
 
 CoolBoard is a minimal macOS cooling dashboard for Apple Silicon Macs. It uses a monochrome technical UI inspired by instrument panels: live thermal status, best-effort fan telemetry, and guarded manual fan control.
 
+![CoolBoard dashboard](docs/assets/coolboard-dashboard.png)
+
+## Install
+
+Download the latest `CoolBoard-macOS-Apple-Silicon.pkg` from [GitHub Releases](https://github.com/Rafinelio/CoolBoard/releases/latest), open it, and follow the installer prompts. The package installs `CoolBoard.app` into `/Applications` and installs the privileged helper needed for manual fan writes.
+
+This first public build is ad-hoc signed, not Developer ID signed or notarized. If Gatekeeper blocks the installer, open it with Control-click > Open. Administrator approval is required because the helper is installed into `/Library/PrivilegedHelperTools`.
+
+Supported baseline:
+
+- Apple Silicon Mac with macOS 14 or later;
+- built-in fans exposed through AppleSMC for fan control;
+- fanless Apple Silicon MacBook Air models run monitoring only and show `0 detected` fans.
+
 ## Status
 
 This repository is push-ready as an open source developer build, not a notarized end-user release.
@@ -99,6 +113,16 @@ swift run CoolBoardHelper -- sensors
 ```
 
 The app talks to `com.coolboard.Helper` through an `NSXPCConnection` with privileged-helper options. Without the helper, monitoring still works, but manual mode can be rejected by AppleSMC. If macOS rejects the write, the UI shows the helper and direct-SMC errors and monitoring continues.
+
+## Compatibility Reports
+
+Apple does not publish a stable Apple Silicon sensor/fan map, so model reports are useful. If CoolBoard works, shows missing sensors, or detects no fans on a machine that should have fans, open a [compatibility report](https://github.com/Rafinelio/CoolBoard/issues/new/choose) with:
+
+- Mac model and chip family;
+- macOS version;
+- number of detected fans;
+- whether manual presets change RPM;
+- a screenshot of the CoolBoard window with any private desktop content cropped out.
 
 ## Repository Layout
 

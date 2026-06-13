@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible CoolBoard problem.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Install package
+        2. Open CoolBoard
+        3. Select 60%
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        Mac model:
+        Chip:
+        macOS:
+        CoolBoard version:
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Attach a cropped CoolBoard window screenshot if useful.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste relevant output from `./script/build_and_run.sh --logs` or helper install logs.
+      render: shell

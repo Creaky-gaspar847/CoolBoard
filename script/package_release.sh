@@ -42,6 +42,8 @@ cd "$ROOT_DIR"
 mkdir -p "$ROOT_DIR/.build/module-cache" "$ROOT_DIR/.build/swiftpm-cache"
 export CLANG_MODULE_CACHE_PATH="$ROOT_DIR/.build/module-cache"
 export SWIFTPM_CACHE_PATH="$ROOT_DIR/.build/swiftpm-cache"
+export COPYFILE_DISABLE=1
+export DITTONORSRC=1
 
 swift test
 swift build -c release --product "$APP_NAME"
@@ -197,15 +199,17 @@ if command -v xattr >/dev/null 2>&1; then
   xattr -c -r "$APP_BUNDLE"
 fi
 
+find "$PKG_ROOT" "$PKG_SCRIPTS" \( -name ".DS_Store" -o -name "._*" \) -delete
+
 pkgbuild_log="$RELEASE_WORK_DIR/pkgbuild.log"
-if ! COPYFILE_DISABLE=1 pkgbuild \
+if ! pkgbuild \
   --root "$PKG_ROOT" \
   --scripts "$PKG_SCRIPTS" \
   --identifier "${BUNDLE_ID}.installer" \
   --version "$APP_VERSION" \
   --install-location "/" \
-  --filter '(^|/)\.DS_Store$' \
-  --filter '(^|/)\._.*$' \
+  --filter '.*\.DS_Store$' \
+  --filter '.*\._.*$' \
   --filter '(^|/)\.svn($|/)' \
   --filter '(^|/)CVS($|/)' \
   "$PKG_PATH" > /dev/null 2>"$pkgbuild_log"; then
@@ -223,6 +227,14 @@ if command -v pkgutil >/dev/null 2>&1; then
   fi
   if ! printf '%s\n' "$payload_files" | grep -qx "^\./Applications/${APP_NAME}\.app/Contents/Library/LaunchServices/${HELPER_NAME}$"; then
     echo "pkg payload does not contain ${HELPER_NAME}" >&2
+    exit 1
+  fi
+
+  expanded_pkg="$RELEASE_WORK_DIR/pkg-expanded"
+  rm -rf "$expanded_pkg"
+  pkgutil --expand-full "$PKG_PATH" "$expanded_pkg" >/dev/null 2>&1
+  if find "$expanded_pkg/Payload" \( -name ".DS_Store" -o -name "._*" \) -print -quit | grep -q .; then
+    echo "expanded pkg payload contains Finder metadata files" >&2
     exit 1
   fi
 fi
