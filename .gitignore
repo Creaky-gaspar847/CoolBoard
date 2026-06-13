@@ -1,0 +1,13 @@
+.DS_Store
+.metadata_never_index
+.build/
+.swiftpm/
+DerivedData/
+dist/
+work/
+outputs/
+*.xcodeproj/
+*.xcworkspace/
+*.xcuserstate
+xcuserdata/
+*.log
