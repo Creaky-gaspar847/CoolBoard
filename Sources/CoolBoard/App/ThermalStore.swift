@@ -20,7 +20,7 @@ final class ThermalStore: ObservableObject {
     @Published var statusMessage: String?
     @Published var activePresetLabel = "Custom*"
 
-    static let presetPercents = [10, 20, 40, 60, 80, 100]
+    static let presetPercents = [0, 10, 20, 40, 60, 80, 100]
 
     private let service: any ThermalHardwareServicing
     private var pollTask: Task<Void, Never>?
@@ -218,17 +218,19 @@ final class ThermalStore: ObservableObject {
     }
 
     func resetFanTargetsToZero() async {
-        isApplyingFanMode = true
-        errorMessage = nil
-        statusMessage = "Resetting fan targets to 0 RPM"
-        defer { isApplyingFanMode = false }
+        let controllableFans = snapshot.fans.filter(\.isControllable)
+        guard !controllableFans.isEmpty else {
+            errorMessage = "No controllable fans are available."
+            statusMessage = nil
+            return
+        }
 
-        confirmedManualTargetsByFanID.removeAll()
-        suspendedManualTargetsByFanID.removeAll()
-        await service.restoreAutomaticFanControl()
-        activePresetLabel = "Custom*"
-        statusMessage = "Fan targets reset to 0 RPM"
-        await refresh()
+        let targets = controllableFans.map { fan in
+            targetRPMByFanID[fan.id] = 0
+            return ManualFanTarget(fan: fan, targetRPM: 0)
+        }
+
+        await applyFanModes(targets, applyingMessage: "Applying 0%: \(targets.map { $0.fan.name }.joined(separator: ", "))")
     }
 
     private func applyFanMode(fanID: Int, mode: CoolingMode) async {

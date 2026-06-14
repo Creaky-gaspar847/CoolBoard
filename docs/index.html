@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="CoolBoard is a minimal macOS cooling dashboard for Apple Silicon Macs.">
+    <title>CoolBoard - Apple Silicon cooling control</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="site-header" aria-label="Primary">
+      <a class="brand" href="#top" aria-label="CoolBoard home">
+        <span class="pixel-mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </span>
+        <span>CoolBoard</span>
+      </a>
+      <nav class="site-nav" aria-label="Links">
+        <a href="https://github.com/Rafinelio/CoolBoard">GitHub</a>
+        <a href="./architecture.md">Architecture</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">Apple Silicon cooling control</h1>
+          <p>Monitor thermal sensors and control detected fans from a quiet macOS panel.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://github.com/Rafinelio/CoolBoard/releases/latest/download/CoolBoard-macOS-Apple-Silicon.pkg">
+              Download .pkg
+            </a>
+            <a class="button secondary" href="https://github.com/Rafinelio/CoolBoard">
+              View source
+            </a>
+          </div>
+        </div>
+
+        <div class="pixel-field" aria-hidden="true" data-pixel-field></div>
+
+        <figure class="app-frame">
+          <img src="./assets/coolboard-dashboard.png" alt="CoolBoard app window showing detected fans and temperature sensors.">
+        </figure>
+      </section>
+
+      <section class="notes" aria-label="Project notes">
+        <article>
+          <h2>Install</h2>
+          <p>macOS 14+, Apple Silicon, administrator approval for the helper.</p>
+        </article>
+        <article>
+          <h2>Safety</h2>
+          <p>Auto by default. Manual presets restore on quit, sleep, wake, and errors.</p>
+        </article>
+        <article>
+          <h2>Compatibility</h2>
+          <p>Fanless MacBook Air models run monitoring only and show zero detected fans.</p>
+        </article>
+        <article>
+          <h2>Open Source</h2>
+          <p>MIT licensed SwiftUI app with documented AppleSMC limitations.</p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>MIT License</span>
+      <a href="https://github.com/Rafinelio/CoolBoard/issues/new/choose">Report compatibility</a>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

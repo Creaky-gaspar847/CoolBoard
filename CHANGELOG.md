@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.1 - 2026-06-14
+
+### Added
+
+- Added `0%` fan presets across the main app and menu-bar quick control.
+- Added a static GitHub Pages website with direct `.pkg` download link.
+- Added a minimal interactive pixel hero with reduced-motion support.
+
+### Changed
+
+- The menu-bar reset button now applies a real `0 RPM` manual target instead of restoring Auto.
+- Manual `0 RPM` requests are preserved through the app, helper, and direct AppleSMC fallback paths instead of being clamped to the hardware minimum RPM.
+
 ## v0.1.0 - 2026-06-13
 
 Initial public developer release of CoolBoard.

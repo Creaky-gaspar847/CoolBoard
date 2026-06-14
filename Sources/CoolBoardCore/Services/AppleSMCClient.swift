@@ -210,7 +210,7 @@ public final class AppleSMCClient: @unchecked Sendable {
         if validateFanExists {
             let snapshots = fanSnapshots()
             if let fan = snapshots.first(where: { $0.id == fanID }) {
-                let lowerBound = max(fan.minRPM, minimumRPM)
+                let lowerBound = rpm <= 0 ? 0 : max(fan.minRPM, minimumRPM)
                 let upperBound = min(max(fan.maxRPM, lowerBound), max(maximumRPM, lowerBound))
                 try setManualFanTarget(
                     fanID: fanID,
@@ -224,7 +224,7 @@ public final class AppleSMCClient: @unchecked Sendable {
             throw FanControlError.invalidFan(fanID)
         }
 
-        let safeMinimum = max(0, minimumRPM)
+        let safeMinimum = rpm <= 0 ? 0 : max(0, minimumRPM)
         let safeMaximum = max(safeMinimum, maximumRPM)
         let clampedRPM = min(max(rpm, safeMinimum), safeMaximum)
         try enableManualFanMode(fanID: fanID)

@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_NAME="CoolBoard"
 BUNDLE_ID="com.coolboard.CoolBoard"
-APP_VERSION="0.1.0"
+APP_VERSION="0.1.1"
 MIN_SYSTEM_VERSION="14.0"
 HELPER_NAME="CoolBoardHelper"
 HELPER_LABEL="com.coolboard.Helper"

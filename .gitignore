@@ -6,6 +6,8 @@ DerivedData/
 dist/
 work/
 outputs/
+output/
+.playwright-cli/
 *.xcodeproj/
 *.xcworkspace/
 *.xcuserstate

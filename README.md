@@ -4,6 +4,8 @@ CoolBoard is a minimal macOS cooling dashboard for Apple Silicon Macs. It uses a
 
 ![CoolBoard dashboard](docs/assets/coolboard-dashboard.png)
 
+Website: https://rafinelio.github.io/CoolBoard/
+
 ## Install
 
 Download the latest `CoolBoard-macOS-Apple-Silicon.pkg` from [GitHub Releases](https://github.com/Rafinelio/CoolBoard/releases/latest), open it, and follow the installer prompts. The package installs `CoolBoard.app` into `/Applications` and installs the privileged helper needed for manual fan writes.

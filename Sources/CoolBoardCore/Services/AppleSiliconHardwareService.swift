@@ -224,6 +224,9 @@ public actor AppleSiliconHardwareService: ThermalHardwareServicing {
             return .systemAuto
         case let .manual(targetRPM):
             let target = observedTargetRPM ?? targetRPM
+            if target <= 0 {
+                return .manual(targetRPM: 0)
+            }
             return .manual(targetRPM: min(max(target, minRPM), maxRPM))
         }
     }

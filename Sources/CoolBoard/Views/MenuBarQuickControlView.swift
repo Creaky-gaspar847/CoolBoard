@@ -23,11 +23,12 @@ struct MenuBarQuickControlView: View {
                 Spacer()
 
                 Button {
-                    Task { await store.refresh() }
+                    Task { await store.resetFanTargetsToZero() }
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }
-                .help("Refresh")
+                .disabled(store.isApplyingFanMode || store.snapshot.fans.filter(\.isControllable).isEmpty)
+                .help("Set all fans to 0%")
             }
 
             DividerLine(axis: .horizontal)
@@ -166,7 +167,7 @@ struct GlobalFanPresetBlock: View {
                             .overlay(Rectangle().stroke(CoolBoardTheme.lineMuted, lineWidth: 1))
                         }
                         .buttonStyle(.plain)
-                        .help("Set both fans to \(percent)%")
+                        .help(percent == 0 ? "Set all fans to 0 RPM" : "Set all fans to \(percent)%")
                         .disabled(store.isApplyingFanMode || controllableFans.isEmpty)
                     }
                 }

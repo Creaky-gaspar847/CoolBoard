@@ -79,16 +79,25 @@ public struct FanState: Identifiable, Codable, Equatable, Sendable {
     }
 
     public func clampedRPM(_ requestedRPM: Int) -> Int {
-        min(max(requestedRPM, minRPM), maxRPM)
+        if requestedRPM <= 0 {
+            return 0
+        }
+        return min(max(requestedRPM, minRPM), maxRPM)
     }
 
     public func rpm(forPowerPercent percent: Int) -> Int {
         let clampedPercent = min(max(percent, 0), 100)
+        if clampedPercent == 0 {
+            return 0
+        }
         let range = maxRPM - minRPM
         return clampedRPM(minRPM + Int((Double(range) * Double(clampedPercent) / 100.0).rounded()))
     }
 
     public func powerPercent(forRPM rpm: Int) -> Int {
+        if rpm <= 0 {
+            return 0
+        }
         guard maxRPM > minRPM else {
             return 0
         }
