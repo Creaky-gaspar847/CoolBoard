@@ -4,7 +4,7 @@ CoolBoard is a minimal macOS cooling dashboard for Apple Silicon Macs. It uses a
 
 ![CoolBoard dashboard](docs/assets/coolboard-dashboard.png)
 
-Website: https://rafinelio.github.io/CoolBoard/
+Website preview lives in `docs/` and is currently intended for local development or a future custom domain.
 
 ## Install
 
@@ -38,6 +38,12 @@ swift test
 
 The run script builds the SwiftPM GUI target, stages `dist/CoolBoard.app`, and launches it as a real macOS app bundle.
 It also embeds `CoolBoardHelper` at `Contents/Library/LaunchServices/CoolBoardHelper` for the future signed `SMAppService` installation path.
+
+Local website preview:
+
+```bash
+python3 -m http.server 8087 --directory docs
+```
 
 Useful variants:
 

@@ -5,7 +5,7 @@
 ### Added
 
 - Added `0%` fan presets across the main app and menu-bar quick control.
-- Added a static GitHub Pages website with direct `.pkg` download link.
+- Added a static website with direct `.pkg` download link.
 - Added a minimal interactive pixel hero with reduced-motion support.
 
 ### Changed

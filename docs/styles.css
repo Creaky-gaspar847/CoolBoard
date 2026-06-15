@@ -234,41 +234,18 @@ h1 {
 }
 
 .pixel-field {
-  --pixel-columns: 132;
-  --pixel-rows: 64;
   --pixel-size: 3px;
   --pixel-gap: 5px;
   position: absolute;
   top: 72px;
   right: -92px;
-  bottom: 58px;
-  left: min(22vw, 280px);
-  display: grid;
-  grid-template-columns: repeat(var(--pixel-columns), var(--pixel-size));
-  grid-template-rows: repeat(var(--pixel-rows), var(--pixel-size));
-  align-content: center;
-  justify-content: end;
-  gap: var(--pixel-gap);
+  width: min(82vw, 1060px);
+  height: min(56vh, 520px);
+  display: block;
   opacity: 0.82;
   pointer-events: none;
   z-index: 1;
-}
-
-.pixel {
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.018);
-  transition: background 130ms ease, border-color 130ms ease, box-shadow 130ms ease, opacity 130ms ease;
-}
-
-.pixel.is-seed {
-  background: rgba(255,255,255,0.09);
-  border-color: rgba(255,255,255,0.2);
-}
-
-.pixel.is-lit {
-  background: rgba(255,255,255,0.92);
-  border-color: rgba(255,255,255,0.92);
-  box-shadow: 0 0 18px rgba(255,255,255,0.4);
+  contain: strict;
 }
 
 .app-frame {
@@ -366,16 +343,12 @@ h1 {
   }
 
   .pixel-field {
-    --pixel-columns: 54;
-    --pixel-rows: 26;
     --pixel-size: 4px;
     --pixel-gap: 4px;
     position: relative;
     inset: auto;
     width: 100%;
-    height: auto;
-    align-content: start;
-    justify-content: start;
+    height: 214px;
     order: 2;
   }
 
