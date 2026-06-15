@@ -6,6 +6,7 @@ const context = canvas instanceof HTMLCanvasElement ? canvas.getContext("2d", { 
 if (canvas instanceof HTMLCanvasElement && context && hero) {
   const baseCanvas = document.createElement("canvas");
   const baseContext = baseCanvas.getContext("2d", { alpha: true });
+  const activePixels = new Map();
   let bounds = { width: 0, height: 0, left: 0, top: 0 };
   let dpr = 1;
   let pixelSize = 3;
@@ -15,7 +16,6 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
   let rows = 0;
   let animationFrame = 0;
   let previousPoint = null;
-  let splashes = [];
 
   const numericStyle = (name, fallback) => {
     const value = Number.parseFloat(getComputedStyle(canvas).getPropertyValue(name));
@@ -34,7 +34,15 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
     return 0.022;
   };
 
-  const snap = (value) => Math.round(value / stride) * stride;
+  const refreshBounds = () => {
+    const rect = canvas.getBoundingClientRect();
+    bounds = {
+      width: Math.max(1, rect.width),
+      height: Math.max(1, rect.height),
+      left: rect.left,
+      top: rect.top
+    };
+  };
 
   const drawBaseGrid = () => {
     if (!baseContext) return;
@@ -52,14 +60,8 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
   };
 
   const resizeCanvas = () => {
-    const rect = canvas.getBoundingClientRect();
+    refreshBounds();
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    bounds = {
-      width: Math.max(1, rect.width),
-      height: Math.max(1, rect.height),
-      left: rect.left,
-      top: rect.top
-    };
     pixelSize = numericStyle("--pixel-size", 3);
     pixelGap = numericStyle("--pixel-gap", 5);
     stride = pixelSize + pixelGap;
@@ -75,58 +77,70 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
 
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
     baseContext?.setTransform(dpr, 0, 0, dpr, 0, 0);
+    activePixels.clear();
     drawBaseGrid();
     draw();
   };
 
-  const makeDrops = (x, y, direction) => {
-    const count = Math.min(132, Math.max(68, Math.round(bounds.width / 12)));
-    const radius = Math.min(320, Math.max(150, bounds.width * 0.23));
-    const drops = [];
+  const setActivePixel = (column, row, strength, now) => {
+    if (column < 0 || row < 0 || column >= columns || row >= rows) return;
 
-    for (let index = 0; index < count; index += 1) {
-      const seed = Math.random();
-      const sideSpray = (Math.random() - 0.5) * Math.PI * 1.18;
-      const reverseSpray = Math.random() > 0.74 ? Math.PI + (Math.random() - 0.5) * 0.9 : 0;
-      const angle = direction + sideSpray + reverseSpray;
-      const reach = (0.08 + Math.pow(Math.random(), 1.7) * 0.92) * radius;
-      const skew = 0.5 + Math.random() * 0.75;
-      drops.push({
-        dx: Math.cos(angle) * reach,
-        dy: Math.sin(angle) * reach * skew,
-        delay: Math.random() * 120,
-        alpha: 0.48 + seed * 0.52,
-        size: seed > 0.84 ? pixelSize * 2.2 : pixelSize * 1.2,
-        hold: 980 + Math.random() * 520
-      });
+    const key = `${column}:${row}`;
+    const noise = hash(column + 19, row + 23);
+    const existing = activePixels.get(key);
+    const nextStrength = Math.min(1, strength * (0.7 + noise * 0.42));
+    const nextPixel = {
+      column,
+      row,
+      startedAt: now,
+      delay: noise * 95,
+      hold: 620 + noise * 360,
+      strength: nextStrength,
+      size: nextStrength > 0.82 ? pixelSize * 1.55 : pixelSize
+    };
+
+    if (!existing || existing.strength < nextStrength || now - existing.startedAt > 220) {
+      activePixels.set(key, nextPixel);
     }
-
-    drops.push(
-      { dx: 0, dy: 0, delay: 0, alpha: 0.96, size: pixelSize * 2.4, hold: 640 },
-      { dx: stride * 2, dy: -stride, delay: 24, alpha: 0.86, size: pixelSize * 1.6, hold: 760 },
-      { dx: -stride, dy: stride * 2, delay: 44, alpha: 0.78, size: pixelSize * 1.5, hold: 760 }
-    );
-
-    return drops;
   };
 
-  const addSplash = (event) => {
-    const now = performance.now();
+  const activatePixels = (event) => {
+    refreshBounds();
+
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    if (x < -40 || y < -40 || x > bounds.width + 40 || y > bounds.height + 40) return;
+    if (x < 0 || y < 0 || x > bounds.width || y > bounds.height) return;
 
-    const previous = previousPoint || { x: bounds.width * 0.5, y: bounds.height * 0.5, at: now - 80 };
-    const moved = Math.hypot(x - previous.x, y - previous.y);
-    if (now - previous.at < 36 && moved < 34) return;
-
-    const direction = moved > 4
-      ? Math.atan2(y - previous.y, x - previous.x)
-      : Math.atan2(y - bounds.height * 0.5, x - bounds.width * 0.5);
+    const now = performance.now();
+    const previous = previousPoint;
+    const moved = previous ? Math.hypot(x - previous.x, y - previous.y) : Infinity;
+    if (previous && now - previous.at < 48) return;
+    if (previous && moved < stride * 1.6) return;
 
     previousPoint = { x, y, at: now };
-    splashes.push({ x, y, at: now, drops: makeDrops(x, y, direction) });
-    splashes = splashes.slice(-5);
+
+    const centerColumn = Math.round(x / stride);
+    const centerRow = Math.round(y / stride);
+    const radius = window.innerWidth <= 560 ? 5 : 7;
+
+    for (let row = centerRow - radius; row <= centerRow + radius; row += 1) {
+      for (let column = centerColumn - radius; column <= centerColumn + radius; column += 1) {
+        const dx = column - centerColumn;
+        const dy = row - centerRow;
+        const distance = Math.hypot(dx * 0.92, dy * 1.08);
+        const noise = hash(column * 3 + centerColumn, row * 5 + centerRow);
+        const irregularRadius = radius * (0.58 + noise * 0.42);
+        const isCore = distance <= 1.35;
+        const isBody = distance <= irregularRadius && noise > 0.26;
+        const isEdge = distance <= radius && noise > 0.76;
+
+        if (!isCore && !isBody && !isEdge) continue;
+
+        const falloff = Math.max(0, 1 - distance / Math.max(1, radius));
+        const strength = isCore ? 0.96 : Math.max(0.28, falloff * (0.64 + noise * 0.36));
+        setActivePixel(column, row, strength, now);
+      }
+    }
 
     if (!animationFrame) {
       animationFrame = requestAnimationFrame(draw);
@@ -138,26 +152,26 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
     context.drawImage(baseCanvas, 0, 0, bounds.width, bounds.height);
 
     if (!reducedMotion) {
-      splashes.forEach((splash) => {
-        splash.drops.forEach((drop) => {
-          const age = now - splash.at - drop.delay;
-          if (age < 0 || age > drop.hold) return;
+      activePixels.forEach((pixel, key) => {
+        const age = now - pixel.startedAt - pixel.delay;
+        if (age < 0) return;
 
-          const progress = age / drop.hold;
-          const easeOut = 1 - Math.pow(1 - progress, 2.6);
-          const fade = Math.pow(1 - progress, 1.9);
-          const x = snap(splash.x + drop.dx * easeOut);
-          const y = snap(splash.y + drop.dy * easeOut);
-          if (x < 0 || y < 0 || x > bounds.width || y > bounds.height) return;
+        if (age > pixel.hold) {
+          activePixels.delete(key);
+          return;
+        }
 
-          context.fillStyle = `rgba(255, 255, 255, ${(drop.alpha * fade).toFixed(3)})`;
-          context.fillRect(x, y, drop.size, drop.size);
-        });
+        const rise = Math.min(1, age / 180);
+        const fade = Math.pow(1 - age / pixel.hold, 1.45);
+        const alpha = Math.min(0.92, pixel.strength * rise * fade);
+        if (alpha <= 0.01) return;
+
+        context.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
+        context.fillRect(pixel.column * stride, pixel.row * stride, pixel.size, pixel.size);
       });
     }
 
-    splashes = splashes.filter((splash) => now - splash.at <= 1640);
-    if (splashes.length > 0) {
+    if (activePixels.size > 0) {
       animationFrame = requestAnimationFrame(draw);
     } else {
       animationFrame = 0;
@@ -166,8 +180,9 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
 
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas, { passive: true });
+  window.addEventListener("scroll", refreshBounds, { passive: true });
 
   if (!reducedMotion) {
-    hero.addEventListener("pointermove", addSplash, { passive: true });
+    hero.addEventListener("pointermove", activatePixels, { passive: true });
   }
 }
