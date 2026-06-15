@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="CoolBoard is a minimal macOS cooling dashboard for Apple Silicon Macs.">
     <title>CoolBoard - Apple Silicon cooling control</title>
-    <link rel="stylesheet" href="./styles.css?v=mockup-frame-20260615">
+    <link rel="stylesheet" href="./styles.css?v=download-section-20260615">
   </head>
   <body>
     <header class="site-header" aria-label="Primary">
@@ -43,6 +43,40 @@
         </figure>
       </section>
 
+      <section class="download-detail" aria-labelledby="download-title">
+        <div class="download-copy">
+          <p class="section-kicker">Download contents</p>
+          <h2 id="download-title">A macOS installer package, not a loose zip.</h2>
+          <p>
+            The .pkg from GitHub Releases installs CoolBoard into Applications and sets up the local helper path used for fan writes after administrator approval.
+          </p>
+        </div>
+
+        <div class="download-flow" aria-label="What the package installs">
+          <div class="flow-node package-node">
+            <span class="node-index">01</span>
+            <strong>CoolBoard .pkg</strong>
+            <small>Apple Silicon installer</small>
+          </div>
+          <div class="flow-line" aria-hidden="true"></div>
+          <div class="flow-node">
+            <span class="node-index">02</span>
+            <strong>CoolBoard.app</strong>
+            <small>SwiftUI monitor and control panel</small>
+          </div>
+          <div class="flow-node">
+            <span class="node-index">03</span>
+            <strong>Local helper</strong>
+            <small>Fan mode and RPM writes, admin-gated</small>
+          </div>
+          <div class="flow-node">
+            <span class="node-index">04</span>
+            <strong>No cloud runtime</strong>
+            <small>No Python bootstrap or remote service</small>
+          </div>
+        </div>
+      </section>
+
       <section class="notes" aria-label="Project notes">
         <article>
           <h2>Install</h2>
@@ -68,6 +102,6 @@
       <a href="https://github.com/Rafinelio/CoolBoard/issues/new/choose">Report compatibility</a>
     </footer>
 
-    <script src="./app.js?v=mockup-frame-20260615"></script>
+    <script src="./app.js?v=download-section-20260615"></script>
   </body>
 </html>
