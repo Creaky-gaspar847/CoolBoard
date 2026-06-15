@@ -1,7 +1,51 @@
 const canvas = document.querySelector("[data-pixel-field]");
 const hero = document.querySelector(".hero");
+const scrollFrame = document.querySelector("[data-scroll-frame]");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const context = canvas instanceof HTMLCanvasElement ? canvas.getContext("2d", { alpha: true }) : null;
+
+const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
+
+if (hero && scrollFrame instanceof HTMLElement) {
+  const updateScrollFrame = () => {
+    if (reducedMotion) {
+      hero.style.setProperty("--frame-rotate", "0deg");
+      hero.style.setProperty("--frame-scale", "1");
+      hero.style.setProperty("--frame-y", "0px");
+      hero.style.setProperty("--copy-y", "0px");
+      return;
+    }
+
+    const rect = hero.getBoundingClientRect();
+    const scrollRange = Math.max(1, rect.height * 0.58);
+    const progress = easeOutCubic(clamp(-rect.top / scrollRange));
+    const isNarrow = window.innerWidth <= 920;
+    const startRotate = isNarrow ? 10 : 18;
+    const startScale = isNarrow ? 1.02 : 1.055;
+    const endShift = isNarrow ? -18 : -74;
+
+    hero.style.setProperty("--frame-rotate", `${(startRotate * (1 - progress)).toFixed(3)}deg`);
+    hero.style.setProperty("--frame-scale", (startScale - ((startScale - 1) * progress)).toFixed(4));
+    hero.style.setProperty("--frame-y", `${(-42 * progress).toFixed(2)}px`);
+    hero.style.setProperty("--copy-y", `${(endShift * progress).toFixed(2)}px`);
+  };
+
+  let scrollFrameTicking = false;
+  const requestScrollFrameUpdate = () => {
+    if (scrollFrameTicking) return;
+
+    scrollFrameTicking = true;
+    requestAnimationFrame(() => {
+      scrollFrameTicking = false;
+      updateScrollFrame();
+    });
+  };
+
+  updateScrollFrame();
+  window.addEventListener("scroll", requestScrollFrameUpdate, { passive: true });
+  window.addEventListener("resize", requestScrollFrameUpdate, { passive: true });
+}
 
 if (canvas instanceof HTMLCanvasElement && context && hero) {
   const baseCanvas = document.createElement("canvas");

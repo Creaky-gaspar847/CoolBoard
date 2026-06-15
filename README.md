@@ -5,7 +5,6 @@ CoolBoard is a minimal macOS cooling dashboard for Apple Silicon Macs. It uses a
 ![CoolBoard dashboard](docs/assets/coolboard-dashboard.png)
 
 Website preview lives in `docs/` and is currently intended for local development or a future custom domain.
-Optional React/shadcn scroll component notes live in [docs/react-container-scroll-integration.md](docs/react-container-scroll-integration.md).
 
 ## Install
 

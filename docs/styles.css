@@ -98,6 +98,10 @@ a {
 }
 
 .hero {
+  --frame-rotate: 18deg;
+  --frame-scale: 1.055;
+  --frame-y: 0px;
+  --copy-y: 0px;
   position: relative;
   width: min(var(--max), calc(100% - 40px));
   margin: 0 auto;
@@ -107,6 +111,8 @@ a {
   grid-template-columns: minmax(0, 0.82fr) minmax(420px, 1.18fr);
   gap: 48px;
   align-items: center;
+  perspective: 1200px;
+  perspective-origin: 72% 46%;
 }
 
 .hero::before,
@@ -135,6 +141,8 @@ a {
 .hero-copy {
   position: relative;
   z-index: 2;
+  transform: translate3d(0, var(--copy-y), 0);
+  will-change: transform;
 }
 
 h1 {
@@ -254,7 +262,18 @@ h1 {
   padding: 14px;
   background: rgba(255,255,255,0.025);
   border: 1px solid var(--line);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.36),
+    0 40px 70px rgba(0,0,0,0.22),
+    0 0 0 1px rgba(255,255,255,0.025);
   pointer-events: none;
+  transform:
+    translate3d(0, var(--frame-y), 0)
+    rotateX(var(--frame-rotate))
+    scale(var(--frame-scale));
+  transform-origin: center top;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .app-frame::before {
@@ -336,9 +355,12 @@ h1 {
   }
 
   .hero {
+    --frame-rotate: 10deg;
+    --frame-scale: 1.02;
     min-height: auto;
     grid-template-columns: 1fr;
     padding: 54px 0 42px;
+    perspective-origin: center 62%;
   }
 
   .pixel-field {
@@ -385,6 +407,13 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero {
+    --frame-rotate: 0deg;
+    --frame-scale: 1;
+    --frame-y: 0px;
+    --copy-y: 0px;
+  }
+
   *,
   *::before,
   *::after {
