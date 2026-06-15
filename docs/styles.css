@@ -25,10 +25,8 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px) 0 0 / 72px 72px,
-    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px) 0 0 / 72px 72px,
-    var(--bg);
+  overflow-x: hidden;
+  background: var(--bg);
 }
 
 a {
@@ -99,14 +97,15 @@ a {
 
 .hero {
   position: relative;
-  width: min(var(--max), calc(100% - 40px));
+  width: 100%;
   margin: 0 auto;
   min-height: calc(100vh - 76px);
-  padding: 76px 0 68px;
+  padding: 76px max(20px, calc((100vw - var(--max)) / 2)) 68px;
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(420px, 1.18fr);
   gap: 48px;
   align-items: center;
+  overflow: hidden;
 }
 
 .hero::before,
@@ -121,13 +120,13 @@ a {
 }
 
 .hero::before {
-  left: -18px;
+  left: max(2px, calc((100vw - var(--max)) / 2 - 18px));
   top: 42px;
   border-width: 1px 0 0 1px;
 }
 
 .hero::after {
-  right: -18px;
+  right: max(2px, calc((100vw - var(--max)) / 2 - 18px));
   bottom: 48px;
   border-width: 0 1px 1px 0;
 }
@@ -234,8 +233,8 @@ h1 {
 }
 
 .pixel-field {
-  --pixel-size: 3px;
-  --pixel-gap: 5px;
+  --pixel-size: 2px;
+  --pixel-gap: 7px;
   position: absolute;
   inset: 0;
   width: auto;
@@ -319,7 +318,6 @@ h1 {
 @media (max-width: 920px) {
   .site-header,
   .site-footer,
-  .hero,
   .notes {
     width: min(100% - 28px, var(--max));
   }
@@ -338,12 +336,12 @@ h1 {
   .hero {
     min-height: auto;
     grid-template-columns: 1fr;
-    padding: 54px 0 42px;
+    padding: 54px 14px 42px;
   }
 
   .pixel-field {
-    --pixel-size: 4px;
-    --pixel-gap: 4px;
+    --pixel-size: 2px;
+    --pixel-gap: 7px;
     width: auto;
     height: auto;
   }

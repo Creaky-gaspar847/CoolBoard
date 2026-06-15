@@ -29,9 +29,9 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
 
   const baseAlpha = (column, row) => {
     const value = hash(column, row);
-    if (value > 0.985) return 0.18;
-    if (value > 0.93) return 0.085;
-    return 0.022;
+    if (value > 0.992) return 0.12;
+    if (value > 0.955) return 0.055;
+    return 0.012;
   };
 
   const refreshBounds = () => {
@@ -52,7 +52,7 @@ if (canvas instanceof HTMLCanvasElement && context && hero) {
     for (let row = 0; row < rows; row += 1) {
       for (let column = 0; column < columns; column += 1) {
         const alpha = baseAlpha(column, row);
-        if (alpha < 0.024) continue;
+        if (alpha < 0.018) continue;
         baseContext.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
         baseContext.fillRect(column * stride, row * stride, pixelSize, pixelSize);
       }
