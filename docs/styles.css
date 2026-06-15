@@ -249,28 +249,42 @@ h1 {
 .app-frame {
   position: relative;
   z-index: 2;
-  margin: 120px 0 0;
-  padding: 14px;
-  background: rgba(255,255,255,0.025);
-  border: 1px solid var(--line);
+  margin: 112px 0 0;
+  padding: 0;
+  overflow: visible;
   pointer-events: none;
 }
 
 .app-frame::before {
   content: "LIVE PANEL";
   position: absolute;
-  left: 14px;
-  top: -28px;
+  left: 0;
+  top: -26px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-frame::after {
+  content: "";
+  position: absolute;
+  inset: 10% -4% -6%;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.12), rgba(255,255,255,0.035) 34%, transparent 68%);
+  filter: blur(18px);
+  opacity: 0.46;
+  pointer-events: none;
 }
 
 .app-frame img {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--line-soft);
+  border: 0;
+  border-radius: 14px;
+  filter: drop-shadow(0 34px 74px rgba(0,0,0,0.58));
 }
 
 .notes {
@@ -349,6 +363,10 @@ h1 {
   .app-frame {
     margin-top: 20px;
     order: 3;
+  }
+
+  .app-frame img {
+    border-radius: 10px;
   }
 
   .notes {
