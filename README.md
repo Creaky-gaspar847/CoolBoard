@@ -94,7 +94,7 @@ sudo rm -f /Library/LaunchDaemons/com.coolboard.Helper.plist
 
 ## Safety Model
 
-CoolBoard starts in Auto mode and asks macOS to keep fan control automatic unless a user explicitly requests manual control. Manual preset clicks apply immediately, clamp RPM to the hardware fan range, and try to restore Auto on app startup, shutdown, sleep, wake, or failed writes.
+CoolBoard starts in Auto mode and asks macOS to keep fan control automatic unless a user explicitly requests manual control. Manual preset clicks apply immediately, clamp RPM to the hardware fan range, and try to restore Auto on app startup, shutdown, sleep, wake, or failed writes. After sleep or wake, CoolBoard does not resume the previous manual preset; the user must apply a preset again after opening the Mac.
 
 For production distribution, the helper/XPC path should be signed and installed with `SMAppService`. For local GitHub developer builds, `script/install_helper.sh` installs a root LaunchDaemon. If the helper is unavailable, the app attempts a direct AppleSMC fallback and reports the actual helper/SMC error when macOS rejects the write.
 
@@ -109,7 +109,7 @@ Helper contract:
 - install through `SMAppService`;
 - expose a narrow XPC interface for fan mode changes only;
 - clamp requested RPM to hardware min/max;
-- restore Auto on app quit, helper failure, or rejected writes;
+- restore Auto on app quit, sleep, wake, helper failure, or rejected writes;
 - ship outside the Mac App Store because SMC fan control depends on private mechanisms.
 
 The helper has the same private write path and can be inspected from the command line:

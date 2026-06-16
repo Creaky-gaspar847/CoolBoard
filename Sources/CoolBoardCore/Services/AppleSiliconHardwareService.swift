@@ -93,11 +93,17 @@ public actor AppleSiliconHardwareService: ThermalHardwareServicing {
     }
 
     public func restoreAutomaticFanControl() async {
-        for fan in lastFans where fan.isControllable {
+        let fansToRestore = lastFans.filter(\.isControllable)
+        for fan in fansToRestore {
             do {
-                _ = try await fanControlClient.setFanMode(fanID: fan.id, mode: .systemAuto, currentFan: fan)
+                let restored = try await fanControlClient.setFanMode(fanID: fan.id, mode: .systemAuto, currentFan: fan)
+                remember(restored)
             } catch {
-                _ = try? applyDirectSMCFanMode(fan: fan, mode: .systemAuto, helperError: error)
+                if let restored = try? applyDirectSMCFanMode(fan: fan, mode: .systemAuto, helperError: error) {
+                    remember(restored)
+                } else {
+                    rememberAutoIntent(for: fan)
+                }
             }
         }
     }
@@ -237,6 +243,13 @@ public actor AppleSiliconHardwareService: ThermalHardwareServicing {
         } else {
             lastFans.append(fan)
         }
+    }
+
+    private func rememberAutoIntent(for fan: FanState) {
+        var restored = fan
+        restored.mode = .systemAuto
+        restored.targetRPM = nil
+        remember(restored)
     }
 
     private func readSensors(now: Date) -> [SensorReading] {

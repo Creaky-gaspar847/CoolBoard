@@ -41,7 +41,7 @@ let package = Package(
         ),
         .testTarget(
             name: "CoolBoardCoreTests",
-            dependencies: ["CoolBoardCore"]
+            dependencies: ["CoolBoardCore", "CoolBoard"]
         )
     ]
 )

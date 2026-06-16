@@ -26,7 +26,8 @@ final class ThermalStore: ObservableObject {
     private var pollTask: Task<Void, Never>?
     private var cancellables: Set<AnyCancellable> = []
     private var confirmedManualTargetsByFanID: [Int: Int] = [:]
-    private var suspendedManualTargetsByFanID: [Int: Int] = [:]
+    private var isSleepSafetyActive = false
+    private var fanWriteSafetyGeneration = 0
     private var didRestoreAutoOnStart = false
 
     init(service: any ThermalHardwareServicing = AppleSiliconHardwareService()) {
@@ -92,46 +93,34 @@ final class ThermalStore: ObservableObject {
         pollTask?.cancel()
         pollTask = nil
         confirmedManualTargetsByFanID.removeAll()
-        suspendedManualTargetsByFanID.removeAll()
+        invalidateManualFanTargets()
         Task {
             await service.restoreAutomaticFanControl()
         }
     }
 
     func handleSystemWillSleep() async {
-        suspendedManualTargetsByFanID = confirmedManualTargetsByFanID
-        confirmedManualTargetsByFanID.removeAll()
+        isSleepSafetyActive = true
+        invalidateManualFanTargets()
 
         await service.restoreAutomaticFanControl()
-        activePresetLabel = "Custom*"
-        statusMessage = suspendedManualTargetsByFanID.isEmpty
-            ? "Sleep detected; fan control is in Auto"
-            : "Sleep detected; manual fan control paused"
+        markSnapshotFansAuto()
+        activePresetLabel = "Auto"
+        statusMessage = "Sleep detected; fan control restored to Auto"
         await refresh()
     }
 
     func handleSystemDidWake() async {
+        isSleepSafetyActive = true
+        invalidateManualFanTargets()
+
+        await service.restoreAutomaticFanControl()
+        markSnapshotFansAuto()
         await refresh()
 
-        guard !suspendedManualTargetsByFanID.isEmpty else {
-            statusMessage = "Wake detected; monitoring resumed"
-            return
-        }
-
-        let targets = suspendedManualTargetsByFanID.compactMap { fanID, targetRPM in
-            snapshot.fans.first(where: { $0.id == fanID && $0.isControllable }).map { fan in
-                ManualFanTarget(fan: fan, targetRPM: fan.clampedRPM(targetRPM))
-            }
-        }
-        suspendedManualTargetsByFanID.removeAll()
-
-        guard !targets.isEmpty else {
-            statusMessage = "Wake detected; manual targets could not be resumed"
-            return
-        }
-
-        let applyingMessage = "Wake detected; resuming fan targets"
-        await applyFanModes(targets, applyingMessage: applyingMessage)
+        activePresetLabel = "Auto"
+        statusMessage = "Wake detected; fan control remains Auto"
+        isSleepSafetyActive = false
     }
 
     func refresh() async {
@@ -166,6 +155,10 @@ final class ThermalStore: ObservableObject {
     }
 
     func requestManualMode(for fan: FanState, targetRPM requestedRPM: Int? = nil, sourceLabel: String = "Manual") {
+        guard canApplyManualFanControl() else {
+            return
+        }
+
         guard fan.isControllable else {
             errorMessage = fan.controlMessage ?? "Fan control is unavailable on this Mac."
             statusMessage = nil
@@ -188,6 +181,10 @@ final class ThermalStore: ObservableObject {
     }
 
     func selectGlobalPreset(_ percent: Int) {
+        guard canApplyManualFanControl() else {
+            return
+        }
+
         let controllableFans = snapshot.fans.filter(\.isControllable)
         guard !controllableFans.isEmpty else {
             errorMessage = "No controllable fans are available."
@@ -218,6 +215,10 @@ final class ThermalStore: ObservableObject {
     }
 
     func resetFanTargetsToZero() async {
+        guard canApplyManualFanControl() else {
+            return
+        }
+
         let controllableFans = snapshot.fans.filter(\.isControllable)
         guard !controllableFans.isEmpty else {
             errorMessage = "No controllable fans are available."
@@ -234,6 +235,11 @@ final class ThermalStore: ObservableObject {
     }
 
     private func applyFanMode(fanID: Int, mode: CoolingMode) async {
+        let safetyGeneration = fanWriteSafetyGeneration
+        if case .manual = mode, !canApplyManualFanControl() {
+            return
+        }
+
         isApplyingFanMode = true
         errorMessage = nil
         statusMessage = nil
@@ -241,6 +247,11 @@ final class ThermalStore: ObservableObject {
 
         do {
             _ = try await service.setFanMode(fanID: fanID, mode: mode)
+            guard !shouldDiscardManualWrite(mode: mode, startedAt: safetyGeneration) else {
+                await discardManualWriteAfterSleepWake()
+                return
+            }
+
             switch mode {
             case .systemAuto:
                 confirmedManualTargetsByFanID.removeValue(forKey: fanID)
@@ -258,6 +269,11 @@ final class ThermalStore: ObservableObject {
     }
 
     private func applyFanModes(_ targets: [ManualFanTarget], applyingMessage: String? = nil) async {
+        guard canApplyManualFanControl() else {
+            return
+        }
+
+        let safetyGeneration = fanWriteSafetyGeneration
         isApplyingFanMode = true
         errorMessage = nil
         statusMessage = applyingMessage
@@ -271,6 +287,11 @@ final class ThermalStore: ObservableObject {
                     fanID: target.fan.id,
                     mode: .manual(targetRPM: clampedTarget)
                 )
+                guard !shouldDiscardManualWrite(mode: .manual(targetRPM: clampedTarget), startedAt: safetyGeneration) else {
+                    await discardManualWriteAfterSleepWake()
+                    return
+                }
+
                 confirmedManualTargetsByFanID[target.fan.id] = clampedTarget
                 applyModeLocally(fanID: target.fan.id, mode: .manual(targetRPM: clampedTarget))
                 appliedTargets.append(ManualFanTarget(fan: target.fan, targetRPM: clampedTarget))
@@ -355,7 +376,7 @@ final class ThermalStore: ObservableObject {
     }
 
     private func reassertManualTargetsIfNeeded() async {
-        guard !confirmedManualTargetsByFanID.isEmpty, !isApplyingFanMode else {
+        guard !confirmedManualTargetsByFanID.isEmpty, !isApplyingFanMode, !isSleepSafetyActive else {
             return
         }
 
@@ -394,5 +415,46 @@ final class ThermalStore: ObservableObject {
         activePresetLabel = "Custom*"
         statusMessage = "Fan control restored to Auto"
         await refresh()
+    }
+
+    private func canApplyManualFanControl() -> Bool {
+        guard !isSleepSafetyActive else {
+            errorMessage = "Fan control is paused during sleep or wake. Open the Mac and apply a preset again."
+            statusMessage = nil
+            return false
+        }
+
+        return true
+    }
+
+    private func invalidateManualFanTargets() {
+        fanWriteSafetyGeneration += 1
+        confirmedManualTargetsByFanID.removeAll()
+    }
+
+    private func shouldDiscardManualWrite(mode: CoolingMode, startedAt generation: Int) -> Bool {
+        guard case .manual = mode else {
+            return false
+        }
+
+        return isSleepSafetyActive || generation != fanWriteSafetyGeneration
+    }
+
+    private func discardManualWriteAfterSleepWake() async {
+        invalidateManualFanTargets()
+        await service.restoreAutomaticFanControl()
+        markSnapshotFansAuto()
+        activePresetLabel = "Auto"
+        statusMessage = "Sleep or wake detected; manual fan write discarded and Auto restored"
+        await refresh()
+    }
+
+    private func markSnapshotFansAuto() {
+        snapshot.fans = snapshot.fans.map { fan in
+            var fan = fan
+            fan.mode = .systemAuto
+            fan.targetRPM = nil
+            return fan
+        }
     }
 }

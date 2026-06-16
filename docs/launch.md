@@ -41,7 +41,7 @@ https://github.com/Rafinelio/CoolBoard
 Suggested first comment:
 
 ```text
-I built CoolBoard as a small open-source macOS utility for developers running long local workloads on Apple Silicon Macs. It shows AppleSMC/IORegistry thermal data, detected fan count, current RPM, and guarded manual fan presets with Auto restore on sleep/wake and app exit.
+I built CoolBoard as a small open-source macOS utility for developers running long local workloads on Apple Silicon Macs. It shows AppleSMC/IORegistry thermal data, detected fan count, current RPM, and guarded manual fan presets with Auto restore on sleep/wake and app exit. Sleep/wake clears manual targets instead of resuming them automatically.
 
 The first release is intentionally conservative: Apple Silicon only, MIT licensed, outside the Mac App Store, and clearly marked as using private AppleSMC mechanisms for fan control. Fanless MacBook Air models run monitoring only.
 

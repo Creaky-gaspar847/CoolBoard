@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Sleep and wake now force fan control back to Auto and invalidate pending manual writes instead of resuming the previous manual preset.
+
 ## v0.1.1 - 2026-06-14
 
 ### Added

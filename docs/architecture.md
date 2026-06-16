@@ -22,7 +22,7 @@ The local run script embeds the helper in `CoolBoard.app/Contents/Library/Launch
 
 ## Apple Silicon Constraints
 
-Apple Silicon temperature and fan controls are not public macOS APIs. Any SMC write path must be defensive, scoped, and reversible. CoolBoard applies explicit user preset clicks immediately, clamps every target, and restores Auto during startup, quit, sleep, wake, or failed writes.
+Apple Silicon temperature and fan controls are not public macOS APIs. Any SMC write path must be defensive, scoped, and reversible. CoolBoard applies explicit user preset clicks immediately, clamps every target, and restores Auto during startup, quit, sleep, wake, or failed writes. Sleep and wake invalidate manual targets instead of resuming them automatically.
 
 For production distribution, raw fan writes should live behind a signed helper installed with `SMAppService`. The developer build includes `script/install_helper.sh` for local root-helper installation, `script/package_release.sh` for a shareable unsigned PKG installer, and a direct AppleSMC fallback for diagnostics. The helper should:
 
@@ -30,7 +30,7 @@ For production distribution, raw fan writes should live behind a signed helper i
 - expose a minimal XPC API;
 - validate fan identifiers;
 - clamp RPM to SMC-reported min/max;
-- return Auto mode on crash, shutdown, or failed writes;
+- return Auto mode on crash, shutdown, sleep, wake, or failed writes;
 - log rejected writes without retry loops.
 
 ## Sensor Discovery
