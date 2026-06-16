@@ -2,9 +2,15 @@
 
 ## v0.1.2 - 2026-06-16
 
-### Fixed
+### Known Bugs Fixed
 
-- Sleep and wake now force fan control back to Auto and invalidate pending manual writes instead of resuming the previous manual preset.
+- Fixed a safety issue where sleep/wake could briefly restore Auto and then re-apply the previous manual fan preset during wake or darkwake.
+- Pending manual fan writes are now invalidated when sleep or wake starts, so stale writes cannot complete after Auto restore.
+- AppleSMC restore state is now remembered locally after Auto fallback attempts, reducing stale manual UI state after recovery.
+
+### Notes
+
+- After sleep or wake, manual fan presets are intentionally not resumed. Apply a preset again after opening the Mac.
 
 ## v0.1.1 - 2026-06-14
 
